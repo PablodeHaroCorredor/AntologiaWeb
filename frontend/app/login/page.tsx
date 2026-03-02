@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Music, Loader2, AlertCircle } from 'lucide-react';
+import Image from 'next/image';
+import { Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { auth } from '@/lib/api';
 
@@ -24,8 +25,14 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-[60vh] flex flex-col items-center justify-center p-6">
-      <div className="w-16 h-16 rounded-2xl bg-[#ff5500] flex items-center justify-center mb-6">
-        <Music className="w-8 h-8 text-white" />
+      <div className="w-16 h-16 rounded-2xl overflow-hidden mb-6 ring-2 ring-primary/30">
+        <Image
+          src="/brand/logoAntologia.jpg"
+          alt="AntologiaWeb"
+          width={64}
+          height={64}
+          className="w-full h-full object-cover"
+        />
       </div>
       <h1 className="text-2xl font-bold mb-2">AntologiaWeb</h1>
       <p className="text-muted-foreground text-center mb-8 max-w-sm">

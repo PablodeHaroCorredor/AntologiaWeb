@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   Home,
@@ -9,7 +10,6 @@ import {
   User,
   LogIn,
   LogOut,
-  Music,
   MessageCircle,
 } from 'lucide-react';
 import { useAuth } from '@/components/providers/AuthProvider';
@@ -38,9 +38,13 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
       {/* Sidebar - desktop */}
       <aside className="hidden md:flex md:w-56 md:flex-col md:fixed md:inset-y-0 bg-card border-r border-border">
         <div className="p-4 flex items-center gap-2 border-b border-border">
-          <div className="w-8 h-8 rounded bg-[#ff5500] flex items-center justify-center">
-            <Music className="w-5 h-5 text-white" />
-          </div>
+          <Image
+            src="/brand/logoAntologia.jpg"
+            alt="AntologiaWeb"
+            width={32}
+            height={32}
+            className="w-8 h-8 rounded object-cover shrink-0"
+          />
           <span className="font-bold text-lg">AntologiaWeb</span>
         </div>
         <nav className="flex-1 flex flex-col p-3 space-y-1">
