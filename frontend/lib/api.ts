@@ -22,9 +22,10 @@ export function clearToken() {
 
 export async function api<T>(
   path: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
+  tokenOverride?: string | null
 ): Promise<T> {
-  const token = getToken();
+  const token = tokenOverride !== undefined ? tokenOverride : getToken();
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
     ...options.headers,
@@ -40,7 +41,8 @@ export async function api<T>(
 
 export const auth = {
   getAuthorizeUrl: () => api<{ url: string; state: string }>('/api/auth/soundcloud/authorize'),
-  me: () => api<ApiUser>('/api/auth/me'),
+  /** Si se pasa token (p. ej. desde el hash tras OAuth), se usa para esta petición y evita 401 por timing con localStorage */
+  me: (token?: string | null) => api<ApiUser>('/api/auth/me', {}, token),
   async logout() {
     await api<{ ok: boolean }>('/api/auth/logout', { method: 'POST' });
     clearToken();

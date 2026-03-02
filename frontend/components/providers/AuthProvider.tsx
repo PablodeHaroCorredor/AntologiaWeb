@@ -17,9 +17,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<ApiUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (tokenFromHash?: string | null) => {
     try {
-      const me = await authApi.me();
+      const me = await authApi.me(tokenFromHash);
       setUser(me);
     } catch {
       setUser(null);
@@ -37,13 +37,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    const hash = typeof window !== 'undefined' ? window.location.hash : '';
+    if (typeof window === 'undefined') return;
+    const hash = window.location.hash;
     const match = hash.match(/token=([^&]+)/);
     if (match) {
-      setToken(decodeURIComponent(match[1]));
+      const token = decodeURIComponent(match[1]);
+      setToken(token);
       window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      // Usar el token del hash en la petición /me para evitar 401 por timing con localStorage en producción
+      refresh(token);
+    } else {
+      refresh();
     }
-    refresh();
   }, [refresh]);
 
   return (
