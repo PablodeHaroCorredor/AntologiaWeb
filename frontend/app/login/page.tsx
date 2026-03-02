@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -8,7 +8,7 @@ import { Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { auth } from '@/lib/api';
 
-export default function LoginPage() {
+function LoginContent() {
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const error = searchParams.get('error');
@@ -70,5 +70,22 @@ export default function LoginPage() {
         Volver al inicio
       </Link>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-[60vh] flex flex-col items-center justify-center p-6">
+          <div className="w-16 h-16 rounded-2xl overflow-hidden mb-6 ring-2 ring-primary/30 bg-muted animate-pulse" />
+          <div className="h-8 w-48 bg-muted rounded animate-pulse mb-2" />
+          <div className="h-4 w-64 bg-muted rounded animate-pulse mb-8" />
+          <div className="h-12 w-56 bg-muted rounded animate-pulse" />
+        </div>
+      }
+    >
+      <LoginContent />
+    </Suspense>
   );
 }

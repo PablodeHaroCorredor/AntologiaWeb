@@ -1,16 +1,15 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { Star, Loader2, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { reviews, reviewRequests } from '@/lib/api';
 
-export default function NewReviewPage() {
+function NewReviewContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
@@ -176,5 +175,30 @@ export default function NewReviewPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function NewReviewPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-4 md:p-6 max-w-2xl mx-auto space-y-6">
+          <div className="h-5 w-32 bg-muted rounded animate-pulse" />
+          <div className="rounded-xl border border-border bg-card p-6">
+            <div className="h-6 w-48 bg-muted rounded animate-pulse mb-4" />
+            <div className="flex gap-6 mb-6">
+              <div className="w-20 h-20 rounded-lg bg-muted animate-pulse" />
+              <div className="flex-1 space-y-2">
+                <div className="h-5 w-full bg-muted rounded animate-pulse" />
+                <div className="h-4 w-24 bg-muted rounded animate-pulse" />
+              </div>
+            </div>
+            <div className="h-10 w-full bg-muted rounded animate-pulse" />
+          </div>
+        </div>
+      }
+    >
+      <NewReviewContent />
+    </Suspense>
   );
 }
