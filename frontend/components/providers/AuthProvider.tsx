@@ -38,13 +38,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const hash = window.location.hash;
-    const match = hash.match(/token=([^&]+)/);
-    if (match) {
-      const token = decodeURIComponent(match[1]);
+    // Leer token de query (?token=...) o de hash (#token=...) por si el redirect usa uno u otro
+    const params = new URLSearchParams(window.location.search);
+    const hashMatch = window.location.hash.match(/token=([^&]+)/);
+    const tokenParam = params.get('token') || (hashMatch ? decodeURIComponent(hashMatch[1]) : null);
+    if (tokenParam) {
+      const token = tokenParam;
       setToken(token);
-      window.history.replaceState(null, '', window.location.pathname + window.location.search);
-      // Usar el token del hash en la petición /me para evitar 401 por timing con localStorage en producción
+      // Quitar token de la URL por seguridad (no dejar en historial)
+      const cleanSearch = [...params.entries()]
+        .filter(([k]) => k !== 'token')
+        .reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {} as Record<string, string>);
+      const newSearch = new URLSearchParams(cleanSearch).toString();
+      const newUrl = window.location.pathname + (newSearch ? `?${newSearch}` : '');
+      window.history.replaceState(null, '', newUrl);
       refresh(token);
     } else {
       refresh();

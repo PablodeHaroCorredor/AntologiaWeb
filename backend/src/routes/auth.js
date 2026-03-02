@@ -60,7 +60,8 @@ router.get('/soundcloud/callback', async (req, res) => {
       await user.save();
     }
     const token = jwtSign({ userId: user._id.toString() });
-    res.redirect(`${FRONTEND_URL}/?logged_in=1#token=${encodeURIComponent(token)}`);
+    // Usar query en lugar de hash: muchos proxies/CDN eliminan el fragmento (#) en redirects
+    res.redirect(`${FRONTEND_URL}/?logged_in=1&token=${encodeURIComponent(token)}`);
   } catch (err) {
     console.error('OAuth callback error:', err);
     res.redirect(`${FRONTEND_URL}/login?error=oauth_failed`);
