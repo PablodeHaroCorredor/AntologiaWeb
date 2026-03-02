@@ -4,9 +4,10 @@ import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Star, Heart, ArrowLeft } from 'lucide-react';
+import { Star, Heart, ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ConfirmDeleteModal } from '@/components/ui/confirm-delete-modal';
 import { reviews } from '@/lib/api';
 import { formatDate } from '@/lib/utils';
 import type { ApiReview } from '@/lib/api';
@@ -19,6 +20,8 @@ export default function ReviewDetailPage() {
   const { user } = useAuth();
   const [review, setReview] = useState<ApiReview | null>(null);
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
 
@@ -40,6 +43,16 @@ export default function ReviewDetailPage() {
       setLiked(res.liked);
       setLikesCount(res.likes);
     } catch (_) {}
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!user || review?.author._id !== user._id) return;
+    setDeleting(true);
+    try {
+      await reviews.delete(id);
+      router.push('/');
+    } catch (_) {}
+    setDeleting(false);
   };
 
   if (loading) {
@@ -126,11 +139,30 @@ export default function ReviewDetailPage() {
       </div>
 
       {user && review.author._id === user._id && (
-        <div className="mt-6">
+        <div className="mt-6 flex flex-wrap gap-2">
           <Link href={`/review/${review._id}/edit`}>
-            <Button variant="outline">Editar review</Button>
+            <Button variant="outline" className="gap-2">
+              <Pencil className="w-4 h-4" /> Editar review
+            </Button>
           </Link>
+          <Button
+            variant="outline"
+            className="gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+            onClick={() => setDeleteModalOpen(true)}
+            disabled={deleting}
+          >
+            <Trash2 className="w-4 h-4" /> Eliminar
+          </Button>
         </div>
+      )}
+      {review && (
+        <ConfirmDeleteModal
+          open={deleteModalOpen}
+          onClose={() => setDeleteModalOpen(false)}
+          onConfirm={handleDeleteConfirm}
+          title={review.title}
+          loading={deleting}
+        />
       )}
     </div>
   );

@@ -2,10 +2,12 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Star, Heart, MessageCircle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Star, Heart, Pencil, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ConfirmDeleteModal } from '@/components/ui/confirm-delete-modal';
 import { formatDate, cn } from '@/lib/utils';
 import type { ApiReview } from '@/lib/api';
 import { useAuth } from '@/components/providers/AuthProvider';
@@ -15,13 +17,29 @@ import { reviews as reviewsApi } from '@/lib/api';
 interface ReviewCardProps {
   review: ApiReview;
   onLike?: () => void;
+  onDeleted?: (reviewId: string) => void;
 }
 
-export function ReviewCard({ review, onLike }: ReviewCardProps) {
+export function ReviewCard({ review, onLike, onDeleted }: ReviewCardProps) {
   const { user } = useAuth();
+  const router = useRouter();
   const [liked, setLiked] = useState(review.liked ?? false);
   const [likesCount, setLikesCount] = useState(review.likes?.length ?? 0);
   const [loading, setLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const isAuthor = user && review.author._id === user._id;
+
+  const handleDeleteConfirm = async () => {
+    if (!isAuthor) return;
+    setDeleting(true);
+    try {
+      await reviewsApi.delete(review._id);
+      onDeleted?.(review._id);
+      router.refresh();
+    } catch (_) {}
+    setDeleting(false);
+  };
 
   const handleLike = async () => {
     if (!user) return;
@@ -107,6 +125,32 @@ export function ReviewCard({ review, onLike }: ReviewCardProps) {
           </span>
         </Link>
         <div className="flex items-center gap-2">
+          {isAuthor && (
+            <span onClick={(e) => e.stopPropagation()}>
+              <Link href={`/review/${review._id}/edit`}>
+                <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground" title="Editar">
+                  <Pencil className="w-4 h-4" />
+                </Button>
+              </Link>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-muted-foreground hover:text-destructive"
+                title="Eliminar"
+                onClick={() => setDeleteModalOpen(true)}
+                disabled={deleting}
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </span>
+          )}
+      <ConfirmDeleteModal
+        open={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        title={review.title}
+        loading={deleting}
+      />
           <Button
             variant="ghost"
             size="icon"

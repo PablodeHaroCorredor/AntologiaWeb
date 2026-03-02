@@ -51,7 +51,11 @@ export default function HomePage() {
       ) : (
         <div className="space-y-4">
           {reviews.map((review) => (
-            <ReviewCard key={review._id} review={review} />
+            <ReviewCard
+              key={review._id}
+              review={review}
+              onDeleted={(id) => setReviews((prev) => prev.filter((x) => x._id !== id))}
+            />
           ))}
         </div>
       )}

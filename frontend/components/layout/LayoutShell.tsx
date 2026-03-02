@@ -1,13 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Home,
   Search,
   Library,
   User,
   LogIn,
+  LogOut,
   Music,
   MessageCircle,
 } from 'lucide-react';
@@ -24,7 +25,13 @@ const requestsNavItem = { href: '/requests', label: 'Solicitudes', icon: Message
 
 export function LayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { user, loading } = useAuth();
+  const router = useRouter();
+  const { user, loading, logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    router.push('/');
+  };
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
@@ -36,7 +43,7 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
           </div>
           <span className="font-bold text-lg">AntologiaWeb</span>
         </div>
-        <nav className="flex-1 p-3 space-y-1">
+        <nav className="flex-1 flex flex-col p-3 space-y-1">
           {navItems.map(({ href, label, icon: Icon }) => (
             <Link
               key={href}
@@ -67,18 +74,30 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
             </Link>
           )}
           {user ? (
-            <Link
-              href={`/profile/${user._id}`}
-              className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
-                pathname?.startsWith('/profile')
-                  ? 'bg-primary/20 text-primary'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-              )}
-            >
-              <User className="w-5 h-5 shrink-0" />
-              Perfil
-            </Link>
+            <>
+              <Link
+                href={`/profile/${user._id}`}
+                className={cn(
+                  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
+                  pathname?.startsWith('/profile')
+                    ? 'bg-primary/20 text-primary'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                )}
+              >
+                <User className="w-5 h-5 shrink-0" />
+                Perfil
+              </Link>
+              <div className="mt-auto pt-3 border-t border-border">
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="flex w-full items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                >
+                  <LogOut className="w-5 h-5 shrink-0" />
+                  Cerrar sesión
+                </button>
+              </div>
+            </>
           ) : (
             !loading && (
               <Link

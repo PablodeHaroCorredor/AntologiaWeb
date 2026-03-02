@@ -110,6 +110,35 @@ export async function getMe(accessToken) {
   return res.json();
 }
 
+export async function getMePlaylists(accessToken, limit = 50, offset = 0) {
+  const params = new URLSearchParams({
+    linked_partitioning: 'true',
+    limit: String(Math.min(limit, 50)),
+    offset: String(offset),
+    show_tracks: 'false',
+  });
+  const res = await fetch(`${SOUNDCLOUD_API}/me/playlists?${params}`, {
+    headers: { 'Accept': 'application/json; charset=utf-8', ...authHeader(accessToken) },
+  });
+  if (!res.ok) throw new Error(`SoundCloud API: ${res.status}`);
+  const data = await res.json();
+  return Array.isArray(data) ? data : data.collection || [];
+}
+
+export async function getMeTracks(accessToken, limit = 50, offset = 0) {
+  const params = new URLSearchParams({
+    linked_partitioning: 'true',
+    limit: String(Math.min(limit, 50)),
+    offset: String(offset),
+  });
+  const res = await fetch(`${SOUNDCLOUD_API}/me/tracks?${params}`, {
+    headers: { 'Accept': 'application/json; charset=utf-8', ...authHeader(accessToken) },
+  });
+  if (!res.ok) throw new Error(`SoundCloud API: ${res.status}`);
+  const data = await res.json();
+  return Array.isArray(data) ? data : data.collection || [];
+}
+
 export function getAuthorizeUrl(redirectUri, state, codeChallenge) {
   const clientId = getClientId();
   const params = new URLSearchParams({

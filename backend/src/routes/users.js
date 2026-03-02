@@ -2,8 +2,30 @@ import { Router } from 'express';
 import User from '../models/User.js';
 import Review from '../models/Review.js';
 import { authMiddleware } from '../middleware/auth.js';
+import { getMePlaylists, getMeTracks } from '../services/soundcloud.js';
 
 const router = Router();
+
+router.get('/me/soundcloud-library', authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select('accessToken');
+    if (!user || !user.accessToken) {
+      return res.status(401).json({ error: 'Vincula tu cuenta de SoundCloud desde el inicio de sesión' });
+    }
+    const [playlistsRaw, tracksRaw] = await Promise.all([
+      getMePlaylists(user.accessToken, 50, 0),
+      getMeTracks(user.accessToken, 50, 0),
+    ]);
+    const playlists = Array.isArray(playlistsRaw) ? playlistsRaw : playlistsRaw?.collection || [];
+    const tracks = Array.isArray(tracksRaw) ? tracksRaw : tracksRaw?.collection || [];
+    res.json({ playlists, tracks });
+  } catch (err) {
+    if (err.message?.includes('401') || err.message?.includes('Invalid')) {
+      return res.status(401).json({ error: 'Sesión de SoundCloud expirada. Vuelve a iniciar sesión.' });
+    }
+    res.status(502).json({ error: err.message || 'Error al cargar la biblioteca' });
+  }
+});
 
 router.get('/:id', async (req, res) => {
   try {

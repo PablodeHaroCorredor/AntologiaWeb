@@ -89,6 +89,8 @@ export const users = {
     if (opts?.offset) sp.set('offset', String(opts.offset));
     return api<{ reviews: ApiReview[]; total: number }>(`/api/users/${id}/reviews?${sp}`);
   },
+  soundcloudLibrary: () =>
+    api<{ playlists: SoundCloudPlaylist[]; tracks: SoundCloudTrack[] }>('/api/users/me/soundcloud-library'),
 };
 
 export interface ApiReviewRequest {
