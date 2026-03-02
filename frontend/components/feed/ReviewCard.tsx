@@ -18,9 +18,13 @@ interface ReviewCardProps {
   review: ApiReview;
   onLike?: () => void;
   onDeleted?: (reviewId: string) => void;
+  /** Marcar si esta imagen es LCP (primera visible) para priorizar carga */
+  priority?: boolean;
+  /** Si se indica, la zona de contenido (título + cuerpo) enlaza a la review; evita anidar <a> cuando el padre también es un Link */
+  reviewHref?: string;
 }
 
-export function ReviewCard({ review, onLike, onDeleted }: ReviewCardProps) {
+export function ReviewCard({ review, onLike, onDeleted, priority, reviewHref }: ReviewCardProps) {
   const { user } = useAuth();
   const router = useRouter();
   const [liked, setLiked] = useState(review.liked ?? false);
@@ -76,6 +80,7 @@ export function ReviewCard({ review, onLike, onDeleted }: ReviewCardProps) {
                   width={128}
                   height={128}
                   className="w-full h-full object-cover"
+                  priority={priority}
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-muted-foreground">
@@ -84,29 +89,52 @@ export function ReviewCard({ review, onLike, onDeleted }: ReviewCardProps) {
               )}
             </div>
           </Link>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-              <span className="uppercase font-medium text-primary">{review.contentType}</span>
-              {review.artistName && <span>• {review.artistName}</span>}
-            </div>
-            <Link
-              href={soundcloudUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-semibold text-lg hover:text-primary line-clamp-1"
-            >
-              {review.title}
-            </Link>
-            <div className="flex items-center gap-1 mt-2 text-amber-400">
-              {[1, 2, 3, 4, 5].map((n) => (
-                <Star
-                  key={n}
-                  className={cn('w-4 h-4', n <= review.rating ? 'fill-current' : 'opacity-30')}
-                />
-              ))}
-            </div>
-            {review.body && (
-              <p className="mt-2 text-sm text-muted-foreground line-clamp-3">{review.body}</p>
+          <div className="flex-1 min-w-0 min-h-0">
+            {reviewHref ? (
+              <Link href={reviewHref} className="block">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                  <span className="uppercase font-medium text-primary">{review.contentType}</span>
+                  {review.artistName && <span>• {review.artistName}</span>}
+                </div>
+                <span className="font-semibold text-lg hover:text-primary line-clamp-1 block">{review.title}</span>
+                <div className="flex items-center gap-1 mt-2 text-amber-400">
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <Star
+                      key={n}
+                      className={cn('w-4 h-4', n <= review.rating ? 'fill-current' : 'opacity-30')}
+                    />
+                  ))}
+                </div>
+                {review.body && (
+                  <p className="mt-2 text-sm text-muted-foreground line-clamp-3">{review.body}</p>
+                )}
+              </Link>
+            ) : (
+              <>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                  <span className="uppercase font-medium text-primary">{review.contentType}</span>
+                  {review.artistName && <span>• {review.artistName}</span>}
+                </div>
+                <Link
+                  href={soundcloudUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-lg hover:text-primary line-clamp-1"
+                >
+                  {review.title}
+                </Link>
+                <div className="flex items-center gap-1 mt-2 text-amber-400">
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <Star
+                      key={n}
+                      className={cn('w-4 h-4', n <= review.rating ? 'fill-current' : 'opacity-30')}
+                    />
+                  ))}
+                </div>
+                {review.body && (
+                  <p className="mt-2 text-sm text-muted-foreground line-clamp-3">{review.body}</p>
+                )}
+              </>
             )}
           </div>
         </div>

@@ -50,10 +50,11 @@ export default function HomePage() {
         </p>
       ) : (
         <div className="space-y-4">
-          {reviews.map((review) => (
+          {reviews.map((review, index) => (
             <ReviewCard
               key={review._id}
               review={review}
+              priority={index === 0}
               onDeleted={(id) => setReviews((prev) => prev.filter((x) => x._id !== id))}
             />
           ))}

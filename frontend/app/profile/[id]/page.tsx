@@ -7,11 +7,12 @@ import { useEffect, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ReviewCard } from '@/components/feed/ReviewCard';
 import { RequestReviewModal } from '@/components/profile/RequestReviewModal';
-import { users, soundcloud } from '@/lib/api';
+import { users } from '@/lib/api';
 import type { ApiReview, ApiUser, SoundCloudTrack, SoundCloudPlaylist } from '@/lib/api';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, LogOut, Music, List, Loader2, ChevronDown, ChevronRight } from 'lucide-react';
+import { MessageCircle, LogOut, Music, List, Loader2, ChevronDown, ChevronRight, FileText, Library } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface ProfileData extends ApiUser {
   stats: { reviewCount: number; draftCount: number };
@@ -32,6 +33,8 @@ export default function ProfilePage() {
   const [expandedPlaylistId, setExpandedPlaylistId] = useState<string | null>(null);
   const [playlistDetails, setPlaylistDetails] = useState<Record<string, SoundCloudPlaylist>>({});
   const [loadingPlaylistId, setLoadingPlaylistId] = useState<string | null>(null);
+  type ProfileTab = 'reviews' | 'library';
+  const [profileTab, setProfileTab] = useState<ProfileTab>('reviews');
 
   useEffect(() => {
     if (!id) return;
@@ -72,7 +75,7 @@ export default function ProfilePage() {
     }
     setLoadingPlaylistId(playlistId);
     try {
-      const full = await soundcloud.playlist(playlistId);
+      const full = await users.playlistFromLibrary(playlistId);
       setPlaylistDetails((prev) => ({ ...prev, [playlistId]: full }));
       setExpandedPlaylistId(playlistId);
     } catch (_) {
@@ -149,10 +152,39 @@ export default function ProfilePage() {
         onSent={() => {}}
       />
 
-      {/* Dos columnas: Biblioteca SoundCloud | Reviews publicadas */}
+      {/* Pestañas solo en móvil: Reviews (por defecto) y Biblioteca */}
+      <div className="flex gap-2 border-b border-border pb-2 lg:hidden">
+        <button
+          type="button"
+          onClick={() => setProfileTab('reviews')}
+          className={cn(
+            'flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors',
+            profileTab === 'reviews' ? 'bg-primary/20 text-primary' : 'text-muted-foreground hover:text-foreground'
+          )}
+        >
+          <FileText className="w-4 h-4" /> Reviews
+        </button>
+        <button
+          type="button"
+          onClick={() => setProfileTab('library')}
+          className={cn(
+            'flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors',
+            profileTab === 'library' ? 'bg-primary/20 text-primary' : 'text-muted-foreground hover:text-foreground'
+          )}
+        >
+          <Library className="w-4 h-4" /> Biblioteca
+        </button>
+      </div>
+
+      {/* Dos columnas en desktop; en móvil solo se muestra la pestaña activa */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Columna 1: Tu biblioteca de SoundCloud (solo propio perfil) */}
-        <section className="rounded-xl border border-border bg-card p-5">
+        <section
+          className={cn(
+            'rounded-xl border border-border bg-card p-5',
+            profileTab === 'library' ? 'block' : 'hidden lg:block'
+          )}
+        >
           <h2 className="text-lg font-semibold mb-1">Tu biblioteca de SoundCloud</h2>
           <p className="text-muted-foreground text-sm mb-4">
             Tus playlists, canciones y álbumes para reseñar
@@ -175,7 +207,7 @@ export default function ProfilePage() {
                     <Music className="w-4 h-4" /> Canciones
                   </h3>
                   <ul className="space-y-2">
-                    {soundcloudLibrary.tracks.map((t) => (
+                    {soundcloudLibrary.tracks.map((t, idx) => (
                       <SoundCloudItem
                         key={`track-${t.id}`}
                         type="track"
@@ -184,6 +216,7 @@ export default function ProfilePage() {
                         artworkUrl={t.artwork_url}
                         subtitle={t.user?.username}
                         permalinkUrl={t.permalink_url}
+                        priority={idx === 0}
                       />
                     ))}
                   </ul>
@@ -195,7 +228,7 @@ export default function ProfilePage() {
                     <List className="w-4 h-4" /> Playlists y álbumes
                   </h3>
                   <ul className="space-y-2">
-                    {soundcloudLibrary.playlists.map((p) => (
+                    {soundcloudLibrary.playlists.map((p, idx) => (
                       <PlaylistItem
                         key={`playlist-${p.id}`}
                         playlist={p}
@@ -203,6 +236,7 @@ export default function ProfilePage() {
                         detail={playlistDetails[String(p.id)]}
                         loading={loadingPlaylistId === String(p.id)}
                         onToggle={() => togglePlaylist(String(p.id))}
+                        priority={idx === 0}
                       />
                     ))}
                   </ul>
@@ -217,7 +251,12 @@ export default function ProfilePage() {
         </section>
 
         {/* Columna 2: Reviews publicadas */}
-        <section className="rounded-xl border border-border bg-card p-5">
+        <section
+          className={cn(
+            'rounded-xl border border-border bg-card p-5',
+            profileTab === 'reviews' ? 'block' : 'hidden lg:block'
+          )}
+        >
           <h2 className="text-lg font-semibold mb-1">Reviews publicadas</h2>
           <p className="text-muted-foreground text-sm mb-4">
             Críticas que {isOwnProfile ? 'has' : 'ha'} publicado
@@ -226,10 +265,11 @@ export default function ProfilePage() {
             <p className="text-muted-foreground py-8 text-center text-sm">Aún no hay reviews publicadas.</p>
           ) : (
             <div className="space-y-4 max-h-[600px] overflow-y-auto pr-1">
-              {reviewsList.map((r) => (
+              {reviewsList.map((r, index) => (
                 <ReviewCard
                   key={r._id}
                   review={r}
+                  priority={index === 0}
                   onDeleted={(id) => setReviewsList((prev) => prev.filter((x) => x._id !== id))}
                 />
               ))}
@@ -248,6 +288,7 @@ function SoundCloudItem({
   artworkUrl,
   subtitle,
   permalinkUrl,
+  priority,
 }: {
   type: 'track' | 'playlist';
   id: string;
@@ -256,6 +297,7 @@ function SoundCloudItem({
   subtitle?: string;
   permalinkUrl?: string;
   trackCount?: number;
+  priority?: boolean;
 }) {
   const artwork = artworkUrl?.replace('-large', '-t500x500') || null;
   const reviewUrl = `/review/new?type=${type}&id=${id}&title=${encodeURIComponent(title)}&artwork=${encodeURIComponent(artworkUrl || '')}&artist=${encodeURIComponent(subtitle || '')}&permalink=${encodeURIComponent(permalinkUrl || '')}`;
@@ -264,7 +306,7 @@ function SoundCloudItem({
       <div className="flex items-center gap-3 p-2.5 rounded-lg border border-border bg-background/50 hover:border-primary/40 transition-colors">
         <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted shrink-0">
           {artwork ? (
-            <Image src={artwork} alt={title} width={48} height={48} className="w-full h-full object-cover" />
+            <Image src={artwork} alt={title} width={48} height={48} className="w-full h-full object-cover" priority={priority} />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-muted-foreground">
               {type === 'track' ? <Music className="w-5 h-5" /> : <List className="w-5 h-5" />}
@@ -289,12 +331,14 @@ function PlaylistItem({
   detail,
   loading,
   onToggle,
+  priority,
 }: {
   playlist: SoundCloudPlaylist;
   isExpanded: boolean;
   detail?: SoundCloudPlaylist;
   loading: boolean;
   onToggle: () => void;
+  priority?: boolean;
 }) {
   const id = String(playlist.id);
   const artwork = playlist.artwork_url?.replace('-large', '-t500x500') || null;
@@ -320,7 +364,7 @@ function PlaylistItem({
         </button>
         <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted shrink-0">
           {artwork ? (
-            <Image src={artwork} alt={playlist.title} width={48} height={48} className="w-full h-full object-cover" />
+            <Image src={artwork} alt={playlist.title} width={48} height={48} className="w-full h-full object-cover" priority={priority} />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-muted-foreground">
               <List className="w-5 h-5" />

@@ -91,6 +91,8 @@ export const users = {
   },
   soundcloudLibrary: () =>
     api<{ playlists: SoundCloudPlaylist[]; tracks: SoundCloudTrack[] }>('/api/users/me/soundcloud-library'),
+  playlistFromLibrary: (playlistId: string) =>
+    api<SoundCloudPlaylist>(`/api/users/me/playlists/${playlistId}`),
 };
 
 export interface ApiReviewRequest {

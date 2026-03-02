@@ -2,7 +2,7 @@ import { Router } from 'express';
 import User from '../models/User.js';
 import Review from '../models/Review.js';
 import { authMiddleware } from '../middleware/auth.js';
-import { getMePlaylists, getMeTracks } from '../services/soundcloud.js';
+import { getMePlaylists, getMeTracks, getPlaylist } from '../services/soundcloud.js';
 
 const router = Router();
 
@@ -24,6 +24,25 @@ router.get('/me/soundcloud-library', authMiddleware, async (req, res) => {
       return res.status(401).json({ error: 'Sesión de SoundCloud expirada. Vuelve a iniciar sesión.' });
     }
     res.status(502).json({ error: err.message || 'Error al cargar la biblioteca' });
+  }
+});
+
+router.get('/me/playlists/:id', authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select('accessToken');
+    if (!user || !user.accessToken) {
+      return res.status(401).json({ error: 'Vincula tu cuenta de SoundCloud desde el inicio de sesión' });
+    }
+    const playlist = await getPlaylist(req.params.id, user.accessToken);
+    res.json(playlist);
+  } catch (err) {
+    if (err.message?.includes('401') || err.message?.includes('Invalid')) {
+      return res.status(401).json({ error: 'Sesión de SoundCloud expirada. Vuelve a iniciar sesión.' });
+    }
+    if (err.message?.includes('not found') || err.message?.includes('404')) {
+      return res.status(404).json({ error: 'Playlist no encontrada' });
+    }
+    res.status(502).json({ error: err.message || 'Error al cargar la playlist' });
   }
 });
 

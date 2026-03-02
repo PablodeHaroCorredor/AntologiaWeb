@@ -66,17 +66,15 @@ export default function LibraryPage() {
           </h2>
           <div className="space-y-4">
             {drafts.map((r) => (
-              <div key={r._id}>
-                <Link href={`/review/${r._id}/edit`} className="block">
-                  <ReviewCard
-                    review={r}
-                    onDeleted={(id) => {
-                      setDrafts((prev) => prev.filter((x) => x._id !== id));
-                      setReviewsList((prev) => prev.filter((x) => x._id !== id));
-                    }}
-                  />
-                </Link>
-              </div>
+              <ReviewCard
+                key={r._id}
+                review={r}
+                reviewHref={`/review/${r._id}/edit`}
+                onDeleted={(id) => {
+                  setDrafts((prev) => prev.filter((x) => x._id !== id));
+                  setReviewsList((prev) => prev.filter((x) => x._id !== id));
+                }}
+              />
             ))}
           </div>
         </section>
@@ -96,17 +94,15 @@ export default function LibraryPage() {
         ) : (
           <div className="space-y-4">
             {reviewsList.map((r) => (
-              <div key={r._id}>
-                <Link href={`/review/${r._id}`} className="block">
-                  <ReviewCard
-                    review={r}
-                    onDeleted={(id) => {
-                      setReviewsList((prev) => prev.filter((x) => x._id !== id));
-                      setDrafts((prev) => prev.filter((x) => x._id !== id));
-                    }}
-                  />
-                </Link>
-              </div>
+              <ReviewCard
+                key={r._id}
+                review={r}
+                reviewHref={`/review/${r._id}`}
+                onDeleted={(id) => {
+                  setReviewsList((prev) => prev.filter((x) => x._id !== id));
+                  setDrafts((prev) => prev.filter((x) => x._id !== id));
+                }}
+              />
             ))}
           </div>
         )}
