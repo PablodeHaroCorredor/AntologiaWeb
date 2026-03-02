@@ -19,6 +19,10 @@ router.get('/soundcloud/authorize', (req, res) => {
   res.cookie('pkce_verifier', verifier, { httpOnly: true, maxAge: 600000, sameSite: 'lax' });
   res.cookie('oauth_state', state, { httpOnly: true, maxAge: 600000, sameSite: 'lax' });
   const url = getAuthorizeUrl(REDIRECT_URI, state, challenge);
+  // En producción (navegación directa) redirigir para que las cookies se establezcan en first-party
+  if (req.query.go === '1' || !req.get('Accept')?.includes('application/json')) {
+    return res.redirect(url);
+  }
   res.json({ url, state });
 });
 

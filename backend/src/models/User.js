@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema({
   tokenExpiresAt: { type: Date, default: null },
 }, { timestamps: true });
 
-userSchema.index({ soundcloudId: 1 });
+// soundcloudId ya tiene unique: true en el campo, no hace falta index explícito
 userSchema.index({ username: 1 });
 
 export default mongoose.model('User', userSchema);

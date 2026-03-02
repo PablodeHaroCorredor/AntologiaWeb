@@ -6,21 +6,17 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { auth } from '@/lib/api';
+import { API_URL } from '@/lib/api';
 
 function LoginContent() {
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const error = searchParams.get('error');
 
-  const handleLogin = async () => {
+  const handleLogin = () => {
     setLoading(true);
-    try {
-      const { url } = await auth.getAuthorizeUrl();
-      window.location.href = url;
-    } catch (err) {
-      setLoading(false);
-    }
+    // Redirigir al backend para que las cookies OAuth se establezcan en first-party (funciona en producción)
+    window.location.href = `${API_URL}/api/auth/soundcloud/authorize?go=1`;
   };
 
   return (
