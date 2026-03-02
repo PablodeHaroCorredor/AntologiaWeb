@@ -1,0 +1,26 @@
+{
+  "name": "AntologiaWeb - Music Reviews",
+  "short_name": "AntologiaWeb",
+  "description": "Reviews de canciones, playlists y álbumes con SoundCloud",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#ff5500",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/brand/logoAntologia.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/brand/logoAntologia.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["music", "entertainment"]
+}

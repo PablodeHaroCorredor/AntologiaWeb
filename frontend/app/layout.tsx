@@ -1,14 +1,24 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { AuthProvider } from '@/components/providers/AuthProvider';
 import { LayoutShell } from '@/components/layout/LayoutShell';
 
+export const viewport: Viewport = {
+  themeColor: '#ff5500',
+};
+
 export const metadata: Metadata = {
   title: 'AntologiaWeb - Music Reviews',
   description: 'Reviews de canciones, playlists y álbumes con SoundCloud',
+  manifest: '/manifest.json',
   icons: {
     icon: '/brand/logoAntologia.jpg',
     apple: '/brand/logoAntologia.jpg',
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'AntologiaWeb',
   },
 };
 
